@@ -1,0 +1,31 @@
+{
+  "name": "scraptest",
+  "version": "0.1.0",
+  "private": true,
+  "description": "scrapTest monorepo: NestJS (Fastify) + Prisma 7 API and Next.js web app",
+  "packageManager": "pnpm@11.26.0",
+  "engines": {
+    "node": ">=22.12.0",
+    "pnpm": ">=11"
+  },
+  "scripts": {
+    "dev": "pnpm -r --parallel --filter \"./apps/*\" dev",
+    "dev:api": "pnpm --filter @scraptest/api dev",
+    "dev:web": "pnpm --filter @scraptest/web dev",
+    "build": "pnpm --filter @scraptest/api build && pnpm --filter @scraptest/web build",
+    "lint": "pnpm --filter @scraptest/api lint && pnpm --filter @scraptest/web lint",
+    "typecheck": "pnpm --filter @scraptest/api typecheck && pnpm --filter @scraptest/web typecheck",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "db:up": "docker compose up -d",
+    "db:down": "docker compose down",
+    "db:logs": "docker compose logs -f postgres",
+    "db:generate": "pnpm --filter @scraptest/api prisma:generate",
+    "db:migrate": "pnpm --filter @scraptest/api prisma:migrate",
+    "db:deploy": "pnpm --filter @scraptest/api prisma:deploy",
+    "db:studio": "pnpm --filter @scraptest/api prisma:studio"
+  },
+  "devDependencies": {
+    "prettier": "^3.9.10"
+  }
+}

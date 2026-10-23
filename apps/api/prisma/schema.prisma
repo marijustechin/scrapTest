@@ -1,0 +1,24 @@
+// Prisma schema for scrapTest.
+// Connection details live in prisma.config.ts (Prisma 7 style).
+
+generator client {
+  provider               = "prisma-client"
+  output                 = "../src/generated/prisma"
+  moduleFormat           = "esm"
+  importFileExtension    = "js"
+  generatedFileExtension = "ts"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Note {
+  id        String   @id @default(uuid()) @db.Uuid
+  title     String
+  content   String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("notes")
+}

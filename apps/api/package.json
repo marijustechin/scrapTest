@@ -1,0 +1,45 @@
+{
+  "name": "@scraptest/api",
+  "version": "0.1.0",
+  "private": true,
+  "description": "scrapTest API — NestJS 12 (Fastify) + Prisma 7",
+  "type": "module",
+  "scripts": {
+    "build": "prisma generate && nest build",
+    "dev": "prisma generate && nest start --watch",
+    "start": "node dist/main.js",
+    "typecheck": "prisma generate && tsc --noEmit -p tsconfig.json",
+    "lint": "eslint .",
+    "format": "prettier --write .",
+    "prisma:generate": "prisma generate",
+    "prisma:migrate": "prisma migrate dev",
+    "prisma:deploy": "prisma migrate deploy",
+    "prisma:studio": "prisma studio"
+  },
+  "dependencies": {
+    "@nestjs/common": "^12.2.0",
+    "@nestjs/config": "^12.0.1",
+    "@nestjs/core": "^12.2.0",
+    "@nestjs/platform-fastify": "^12.2.0",
+    "@prisma/adapter-pg": "^7.10.1",
+    "@prisma/client": "^7.10.1",
+    "dotenv": "^18.0.9",
+    "fastify": "^5.12.7",
+    "pg": "^8.23.1",
+    "reflect-metadata": "^0.2.2",
+    "rxjs": "^7.8.1"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@nestjs/cli": "^12.0.10",
+    "@nestjs/schematics": "^12.0.10",
+    "@types/node": "^26.6.5",
+    "@types/pg": "^8.23.1",
+    "eslint": "^10.13.0",
+    "eslint-config-prettier": "^10.1.8",
+    "prettier": "^3.9.10",
+    "prisma": "^7.10.1",
+    "typescript": "~6.0.3",
+    "typescript-eslint": "^8.72.0"
+  }
+}
