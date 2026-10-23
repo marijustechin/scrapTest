@@ -2,8 +2,10 @@ import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { AppController } from './app.controller.js';
 import { AppService } from './app.service.js';
+import { CategoriesModule } from './categories/categories.module.js';
 import { HealthController } from './health/health.controller.js';
 import { PrismaModule } from './prisma/prisma.module.js';
+import { ProductsModule } from './products/products.module.js';
 
 function validateEnv(config: Record<string, unknown>): Record<string, unknown> {
   if (typeof config.DATABASE_URL !== 'string' || config.DATABASE_URL.length === 0) {
@@ -24,6 +26,8 @@ function validateEnv(config: Record<string, unknown>): Record<string, unknown> {
       validate: validateEnv,
     }),
     PrismaModule,
+    CategoriesModule,
+    ProductsModule,
   ],
   controllers: [AppController, HealthController],
   providers: [AppService],

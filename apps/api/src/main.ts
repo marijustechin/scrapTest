@@ -1,4 +1,4 @@
-import { Logger } from '@nestjs/common';
+import { Logger, StandardSchemaValidationPipe } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
 import { FastifyAdapter, type NestFastifyApplication } from '@nestjs/platform-fastify';
@@ -14,6 +14,7 @@ async function bootstrap(): Promise<void> {
   const config = app.get(ConfigService);
 
   app.setGlobalPrefix('api');
+  app.useGlobalPipes(new StandardSchemaValidationPipe());
   app.enableCors({ origin: true });
   app.enableShutdownHooks();
 

@@ -18,6 +18,7 @@ Pilnos taisyklės ir versijų politika: [AGENTS.md](AGENTS.md). ESLint abiejuose
 | ORM          | Prisma (naujasis `prisma-client` generatorius + `@prisma/adapter-pg`) | 7.10                             |
 | Duomenų bazė | PostgreSQL (Docker Compose)                                           | 17                               |
 | Frontend     | Next.js App Router, React                                             | 16.4 / 19.3                      |
+| Validacija   | Zod 4 (Standard Schema) — bendra backend'ui ir frontend'ui            | 4.6                              |
 | Kalba        | TypeScript (`strict: true`)                                           | 6.0 (API) / 5.9 (web)            |
 | Įrankiai     | pnpm workspace, ESLint flat config, Prettier                          | pnpm 11 / ESLint 10 / Prettier 3 |
 
@@ -28,26 +29,41 @@ scrapTest/
 ├── apps/
 │   ├── api/                     # NestJS + Fastify
 │   │   ├── prisma/
-│   │   │   ├── schema.prisma    # Note modelis
-│   │   │   └── migrations/      # iniciali migracija
+│   │   │   ├── schema.prisma    # Category + Product modeliai
+│   │   │   └── migrations/      # migracijos (kategorijų seed duomenys)
 │   │   ├── prisma.config.ts     # Prisma 7 konfigūracija (DB URL)
 │   │   ├── nest-cli.json
 │   │   ├── tsconfig.json
 │   │   └── src/
-│   │       ├── main.ts          # bootstrap (Fastify, CORS, /api prefix)
-│   │       ├── app.module.ts    # ConfigModule + PrismaModule
-│   │       ├── app.controller.ts
+│   │       ├── main.ts          # bootstrap (Fastify, CORS, /api prefix, validacijos pipe)
+│   │       ├── app.module.ts    # ConfigModule + PrismaModule + moduliai
 │   │       ├── health/          # GET /api/health (DB ping)
+│   │       ├── categories/      # GET /api/categories
+│   │       ├── products/        # GET/POST /api/products
 │   │       └── prisma/          # PrismaService (driver adapter)
 │   └── web/                     # Next.js App Router
 │       ├── app/page.tsx         # startinis puslapis
 │       ├── app/api-status.tsx   # API/DB būsenos kortelė (client)
+│       ├── app/products/new/    # produkto įvedimo forma
 │       ├── next.config.ts       # /api/* proxy į backend
 │       └── app/globals.css
+├── packages/
+│   └── contracts/               # bendri Zod kontraktai + DTO tipai
+│       └── src/product.ts       # createProductSchema (naudojama API ir web)
 ├── docker-compose.yml           # PostgreSQL 17
 ├── pnpm-workspace.yaml
 └── package.json                 # bendri scriptai
 ```
+
+## API
+
+| Metodas | Kelias            | Paskirtis                                              |
+| ------- | ----------------- | ------------------------------------------------------ |
+| GET     | `/api`            | API informacija                                        |
+| GET     | `/api/health`     | Būsena + DB ping                                       |
+| GET     | `/api/categories` | Kategorijų sąrašas (formos select'ui)                  |
+| GET     | `/api/products`   | Produktų sąrašas (su kategorija)                       |
+| POST    | `/api/products`   | Sukurti produktą (`name`, `categoryId`, `description`) |
 
 ## Reikalavimai
 
@@ -99,7 +115,9 @@ Po paleidimo:
 
 **Prisma 7.** Naudojamas naujasis `prisma-client` generatorius, kuris generuoja TypeScript kodą į `src/generated/prisma` (šis katalogas git'ui ignoruojamas). Kadangi abu apps yra ESM (`"type": "module"`), generatorius nustatytas `moduleFormat = "esm"` ir `importFileExtension = "js"` — todėl importai rašomi su `.js` plėtiniu, pvz. `import { PrismaClient } from '../generated/prisma/client.js'`. DB URL laikomas `prisma.config.ts` (nebe `schema.prisma`).
 
-**Frontend.** `next.config.ts` perrašo `/api/:path*` į `API_URL` (default `http://localhost:3001`), todėl naršyklė kreipiasi į tą patį origin ir CORS nereikalingas. Startinis puslapis rodo stack'ą ir realiu laiku tikrina `/api/health`.
+**Frontend.** `next.config.ts` perrašo `/api/:path*` į `API_URL` (default `http://localhost:3001`), todėl naršyklė kreipiasi į tą patį origin ir CORS nereikalingas. Startinis puslapis rodo stack'ą ir realiu laiku tikrina `/api/health`. Produkto forma (`/products/new`) kategorijas įkelia per `/api/categories`, o išsaugojimą siunčia į `/api/products`.
+
+**Bendri kontraktai.** `packages/contracts` laiko Zod schemas ir DTO tipus. API juos naudoja per Nest 12 `StandardSchemaValidationPipe` (`@Body({ schema: createProductSchema })`), o web — tai pačiai validacijai prieš POST. Viena schema = nėra dvigubos tiesos, o klaidų žinutės vienodos abiejose pusėse. Paketą reikia perbuildinti po pakeitimų: `pnpm --filter @scraptest/contracts build` (tai daro ir `pnpm dev`, ir `pnpm build`).
 
 **ESM.** NestJS 12 ir Prisma 7 yra ESM-first, todėl backend'e santykiniai importai turi `.js` plėtinius, o `tsconfig` naudoja `module`/`moduleResolution: nodenext`.
 
@@ -131,10 +149,11 @@ Produkcijoje migracijas taikykite su `pnpm db:deploy`.
 
 ## Ką toliau pridėti
 
-- DTO validaciją (Nest 12 palaiko Standard Schema — pvz. Zod — be `class-validator`)
-- CRUD modulį `Note` modeliui
+- Produktų sąrašo puslapį (`GET /api/products` jau yra) ir redagavimą
+- Kategorijų valdymą (šiuo metu jos seed'inamos migracijoje)
+- Puslapiavimą ir paiešką produktų sąraše
 - Autentifikaciją (JWT / sesijos)
-- Testus (Nest 12 numatytai naudoja Vitest)
+- Testus (Nest 12 numatytai naudoja Vitest) + E2E
 - CI pipeline (install → lint → typecheck → build)
 
 ## Problemos

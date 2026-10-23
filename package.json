@@ -9,12 +9,12 @@
     "pnpm": ">=11"
   },
   "scripts": {
-    "dev": "pnpm -r --parallel --filter \"./apps/*\" dev",
-    "dev:api": "pnpm --filter @scraptest/api dev",
-    "dev:web": "pnpm --filter @scraptest/web dev",
-    "build": "pnpm --filter @scraptest/api build && pnpm --filter @scraptest/web build",
-    "lint": "pnpm --filter @scraptest/api lint && pnpm --filter @scraptest/web lint",
-    "typecheck": "pnpm --filter @scraptest/api typecheck && pnpm --filter @scraptest/web typecheck",
+    "dev": "pnpm --filter @scraptest/contracts build && pnpm -r --parallel --filter \"./apps/*\" dev",
+    "dev:api": "pnpm --filter @scraptest/contracts build && pnpm --filter @scraptest/api dev",
+    "dev:web": "pnpm --filter @scraptest/contracts build && pnpm --filter @scraptest/web dev",
+    "build": "pnpm --filter @scraptest/contracts build && pnpm --filter @scraptest/api build && pnpm --filter @scraptest/web build",
+    "lint": "pnpm --filter @scraptest/contracts lint && pnpm --filter @scraptest/api lint && pnpm --filter @scraptest/web lint",
+    "typecheck": "pnpm --filter @scraptest/contracts typecheck && pnpm --filter @scraptest/api typecheck && pnpm --filter @scraptest/web typecheck",
     "verify": "pnpm lint && pnpm typecheck && pnpm build",
     "format": "prettier --write .",
     "format:check": "prettier --check .",

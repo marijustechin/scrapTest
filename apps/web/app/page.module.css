@@ -88,6 +88,42 @@
   font-weight: 600;
 }
 
+.cta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 18px 22px;
+  border: 1px solid rgba(74, 222, 128, 0.35);
+  border-radius: 16px;
+  background: var(--accent-soft);
+  color: var(--foreground);
+  transition:
+    border-color 160ms ease,
+    background-color 160ms ease,
+    transform 160ms ease;
+}
+
+.cta:hover {
+  border-color: var(--accent);
+  background: rgba(74, 222, 128, 0.18);
+  transform: translateY(-1px);
+}
+
+.ctaHint {
+  display: block;
+  margin-top: 4px;
+  color: var(--muted);
+  font-size: 0.82rem;
+  font-weight: 400;
+}
+
+.ctaArrow {
+  color: var(--accent);
+  font-size: 1.3rem;
+  line-height: 1;
+}
+
 .statusCard {
   display: flex;
   flex-direction: column;

@@ -22,6 +22,13 @@ Naujausios ≠ eksperimentinės: imame naujausią **stabilų** major, kuris jau 
 
 **Išimtis** galima tik su aiškiu pagrindimu PR apraše (pvz., kritinė biblioteka neturi ESM alternatyvos). Tokiu atveju izoliuojame ją viename adapteryje ir neleidžiame CJS „nutekėti“ į aplikacijos kodą.
 
+## Bendri kontraktai
+
+- Visos API schemos ir DTO tipai gyvena `packages/contracts` (Zod 4, Standard Schema).
+- Backend'as validuoja per Nest `StandardSchemaValidationPipe`, frontend'as — tą pačią schemą prieš POST.
+- Draudžiama dubliuoti validacijos taisykles `apps/` kode ar hardcode'inti laukų ilgių.
+- Keičiant kontraktą: atnaujinti schemą, perbuildinti paketą (`pnpm --filter @scraptest/contracts build`), patikrinti abi puses.
+
 ## Versijų politika
 
 1. Renkamės naujausią stabilų major, kuris aktyviai palaikomas.

@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import { ApiStatus } from './api-status';
 import styles from './page.module.css';
 
@@ -46,6 +47,16 @@ export default function Home() {
             </a>
           ))}
         </section>
+
+        <Link href="/products/new" className={styles.cta}>
+          <span>
+            Pridėti produktą
+            <span className={styles.ctaHint}>Pavadinimas, kategorija, aprašymas</span>
+          </span>
+          <span className={styles.ctaArrow} aria-hidden="true">
+            →
+          </span>
+        </Link>
 
         <ApiStatus />
 
