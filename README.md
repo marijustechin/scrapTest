@@ -2,6 +2,14 @@
 
 Minimalus monorepo startinis projektas: **NestJS (Fastify) + Prisma 7** backend ir **Next.js 16** frontend.
 
+## Filosofija
+
+**Visada naudojame naujausias stabilias ir praktiškai patikrintas technologijas. CommonJS (CJS) mums nepriimtinas — visas projektas yra ESM.**
+
+Tai reiškia: tik `import`/`export` (be `require()`), `"type": "module"` visuose paketuose, `.js` plėtiniai santykiniuose importuose, `import.meta` vietoje `__dirname`, jokių CJS-only bibliotekų ar deprecated API. Naujausias **stabilus** major, ne RC/beta, ir tik po realaus patikrinimo (`pnpm verify`, migracijos, `/api/health`, UI).
+
+Pilnos taisyklės ir versijų politika: [AGENTS.md](AGENTS.md). ESLint abiejuose apps draudžia `require()`, `module.exports`, `__dirname` ir `__filename`.
+
 ## Technologijos
 
 | Sluoksnis    | Technologija                                                          | Versija                          |
@@ -75,6 +83,7 @@ Po paleidimo:
 | `pnpm dev:api`                | Tik NestJS API (http://localhost:3001)                    |
 | `pnpm dev:web`                | Tik Next.js (http://localhost:3000)                       |
 | `pnpm build`                  | Surinkia abu apps į produkcinius build'us                 |
+| `pnpm verify`                 | `lint` + `typecheck` + `build` — pilnas patikrinimas      |
 | `pnpm lint`                   | ESLint abiem apps                                         |
 | `pnpm typecheck`              | `tsc --noEmit` abiem apps                                 |
 | `pnpm format`                 | Prettier visam repo                                       |

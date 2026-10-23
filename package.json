@@ -15,6 +15,7 @@
     "build": "pnpm --filter @scraptest/api build && pnpm --filter @scraptest/web build",
     "lint": "pnpm --filter @scraptest/api lint && pnpm --filter @scraptest/web lint",
     "typecheck": "pnpm --filter @scraptest/api typecheck && pnpm --filter @scraptest/web typecheck",
+    "verify": "pnpm lint && pnpm typecheck && pnpm build",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "db:up": "docker compose up -d",
