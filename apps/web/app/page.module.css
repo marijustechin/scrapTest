@@ -88,7 +88,15 @@
   font-weight: 600;
 }
 
+.ctaRow {
+  display: flex;
+  align-items: stretch;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
 .cta {
+  flex: 1 1 340px;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -107,6 +115,28 @@
 .cta:hover {
   border-color: var(--accent);
   background: rgba(74, 222, 128, 0.18);
+  transform: translateY(-1px);
+}
+
+.ctaSecondary {
+  display: inline-flex;
+  align-items: center;
+  padding: 0 22px;
+  border: 1px solid var(--border-strong);
+  border-radius: 16px;
+  background: var(--surface);
+  color: var(--foreground);
+  font-size: 0.92rem;
+  font-weight: 500;
+  transition:
+    border-color 160ms ease,
+    background-color 160ms ease,
+    transform 160ms ease;
+}
+
+.ctaSecondary:hover {
+  border-color: var(--accent);
+  background: var(--surface-raised);
   transform: translateY(-1px);
 }
 

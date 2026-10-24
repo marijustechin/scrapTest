@@ -4,6 +4,7 @@ export const PRODUCT_NAME_MIN_LENGTH = 2;
 export const PRODUCT_NAME_MAX_LENGTH = 120;
 export const PRODUCT_DESCRIPTION_MAX_LENGTH = 2000;
 export const CATEGORY_NAME_MAX_LENGTH = 60;
+export const PRODUCT_COUNTRY_MAX_LENGTH = 60;
 
 /**
  * Vienas validacijos šaltinis:
@@ -32,6 +33,21 @@ export const createProductSchema = z.object({
 
 export type CreateProductInput = z.infer<typeof createProductSchema>;
 
+/**
+ * Produkto puslapyje įvedama šalis, kurioje bus atliekamas tyrimas.
+ * Laisvas tekstas (kaip ir kategorija) — šalis gali būti rašoma lietuviškai.
+ */
+export const updateProductCountrySchema = z.object({
+  country: z
+    .string()
+    .trim()
+    .min(2, 'Įveskite šalį.')
+    .max(PRODUCT_COUNTRY_MAX_LENGTH, 'Šalies pavadinimas per ilgas (iki 60 simbolių).')
+    .regex(/[\p{L}]/u, 'Šalyje turi būti bent viena raidė.'),
+});
+
+export type UpdateProductCountryInput = z.infer<typeof updateProductCountrySchema>;
+
 export interface CategoryDto {
   id: string;
   name: string;
@@ -42,6 +58,7 @@ export interface ProductDto {
   id: string;
   name: string;
   description: string | null;
+  country: string | null;
   category: CategoryDto;
   createdAt: string;
   updatedAt: string;

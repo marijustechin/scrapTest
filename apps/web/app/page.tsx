@@ -48,15 +48,20 @@ export default function Home() {
           ))}
         </section>
 
-        <Link href="/products/new" className={styles.cta}>
-          <span>
-            Pridėti produktą
-            <span className={styles.ctaHint}>Pavadinimas, kategorija, aprašymas</span>
-          </span>
-          <span className={styles.ctaArrow} aria-hidden="true">
-            →
-          </span>
-        </Link>
+        <div className={styles.ctaRow}>
+          <Link href="/products" className={styles.cta}>
+            <span>
+              Produktų sąrašas
+              <span className={styles.ctaHint}>Peržiūrėti, atidaryti, pradėti tyrimą</span>
+            </span>
+            <span className={styles.ctaArrow} aria-hidden="true">
+              →
+            </span>
+          </Link>
+          <Link href="/products/new" className={styles.ctaSecondary}>
+            + Naujas produktas
+          </Link>
+        </div>
 
         <ApiStatus />
 

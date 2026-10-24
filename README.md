@@ -39,12 +39,14 @@ scrapTest/
 │   │       ├── app.module.ts    # ConfigModule + PrismaModule + moduliai
 │   │       ├── health/          # GET /api/health (DB ping)
 │   │       ├── categories/      # GET /api/categories
-│   │       ├── products/        # GET/POST /api/products
+│   │       ├── products/        # GET/POST /api/products, GET/PATCH /api/products/:id
 │   │       └── prisma/          # PrismaService (driver adapter)
 │   └── web/                     # Next.js App Router
 │       ├── app/page.tsx         # startinis puslapis
 │       ├── app/api-status.tsx   # API/DB būsenos kortelė (client)
+│       ├── app/products/        # sąrašas (/products)
 │       ├── app/products/new/    # produkto įvedimo forma
+│       ├── app/products/[id]/   # produkto puslapis + tyrimo panelė
 │       ├── next.config.ts       # /api/* proxy į backend
 │       └── app/globals.css
 ├── packages/
@@ -57,15 +59,19 @@ scrapTest/
 
 ## API
 
-| Metodas | Kelias            | Paskirtis                                            |
-| ------- | ----------------- | ---------------------------------------------------- |
-| GET     | `/api`            | API informacija                                      |
-| GET     | `/api/health`     | Būsena + DB ping                                     |
-| GET     | `/api/categories` | Kategorijų sąrašas (formos pasiūlymams)              |
-| GET     | `/api/products`   | Produktų sąrašas (su kategorija)                     |
-| POST    | `/api/products`   | Sukurti produktą (`name`, `category`, `description`) |
+| Metodas | Kelias              | Paskirtis                                            |
+| ------- | ------------------- | ---------------------------------------------------- |
+| GET     | `/api`              | API informacija                                      |
+| GET     | `/api/health`       | Būsena + DB ping                                     |
+| GET     | `/api/categories`   | Kategorijų sąrašas (formos pasiūlymams)              |
+| GET     | `/api/products`     | Produktų sąrašas (su kategorija)                     |
+| GET     | `/api/products/:id` | Vienas produktas (404, jei nerastas)                 |
+| POST    | `/api/products`     | Sukurti produktą (`name`, `category`, `description`) |
+| PATCH   | `/api/products/:id` | Išsaugoti tyrimo šalį (`country`)                    |
 
 `category` siunčiamas kaip **laisvas tekstas**. Jei tokios kategorijos dar nėra, ji sukuriama automatiškai: pavadinimas normalizuojamas į `slug` (lietuviškos raidės transliteruojamos, pvz., „Rankdarbiai iš medžio“ → `rankdarbiai-is-medzio`), todėl `Elektronika` ir `elektronika` nesidubliuoja.
+
+`country` taip pat laisvas tekstas (šalis bus naudojama tyrimui). Jis saugomas produkte ir matomas sąraše bei produkto puslapyje.
 
 ## Reikalavimai
 
@@ -117,7 +123,7 @@ Po paleidimo:
 
 **Prisma 7.** Naudojamas naujasis `prisma-client` generatorius, kuris generuoja TypeScript kodą į `src/generated/prisma` (šis katalogas git'ui ignoruojamas). Kadangi abu apps yra ESM (`"type": "module"`), generatorius nustatytas `moduleFormat = "esm"` ir `importFileExtension = "js"` — todėl importai rašomi su `.js` plėtiniu, pvz. `import { PrismaClient } from '../generated/prisma/client.js'`. DB URL laikomas `prisma.config.ts` (nebe `schema.prisma`).
 
-**Frontend.** `next.config.ts` perrašo `/api/:path*` į `API_URL` (default `http://localhost:3001`), todėl naršyklė kreipiasi į tą patį origin ir CORS nereikalingas. Startinis puslapis rodo stack'ą ir realiu laiku tikrina `/api/health`. Produkto forma (`/products/new`) kategorijų pasiūlymus (datalist) įkelia per `/api/categories`, bet kategoriją galima įrašyti laisvai — išsaugojimą siunčia į `/api/products`.
+**Frontend.** `next.config.ts` perrašo `/api/:path*` į `API_URL` (default `http://localhost:3001`), todėl naršyklė kreipiasi į tą patį origin ir CORS nereikalingas. Startinis puslapis rodo stack'ą ir realiu laiku tikrina `/api/health`. Produkto forma (`/products/new`) kategorijų pasiūlymus (datalist) įkelia per `/api/categories`, bet kategoriją galima įrašyti laisvai — išsaugojimą siunčia į `/api/products`. Sąrašas (`/products`) ir produkto puslapis (`/products/[id]`) yra serveriniai komponentai, duomenis imantys per `lib/api.ts`; tyrimo panelė — klientinė ir šalį išsaugo per `PATCH /api/products/:id`.
 
 **Bendri kontraktai.** `packages/contracts` laiko Zod schemas ir DTO tipus. API juos naudoja per Nest 12 `StandardSchemaValidationPipe` (`@Body({ schema: createProductSchema })`), o web — tai pačiai validacijai prieš POST. Viena schema = nėra dvigubos tiesos, o klaidų žinutės vienodos abiejose pusėse. Paketą reikia perbuildinti po pakeitimų: `pnpm --filter @scraptest/contracts build` (tai daro ir `pnpm dev`, ir `pnpm build`).
 
@@ -151,7 +157,8 @@ Produkcijoje migracijas taikykite su `pnpm db:deploy`.
 
 ## Ką toliau pridėti
 
-- Produktų sąrašo puslapį (`GET /api/products` jau yra) ir redagavimą
+- Tyrimo variklį: „Pradėti tyrimą“ kol kas tik išsaugo šalį
+- Produkto redagavimą / trynimą
 - Kategorijų pervadinimą / sujungimą (dabar kuriamos automatiškai iš laisvo teksto, 4 bazinės — seed'inamos migracijoje)
 - Puslapiavimą ir paiešką produktų sąraše
 - Autentifikaciją (JWT / sesijos)

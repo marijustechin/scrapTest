@@ -8,6 +8,7 @@ import {
   type CategoryDto,
   type ProductDto,
 } from '@scraptest/contracts';
+import Link from 'next/link';
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 import styles from './product-form.module.css';
 
@@ -27,7 +28,7 @@ export function ProductForm() {
   const [errors, setErrors] = useState<FieldErrors>({});
   const [suggestions, setSuggestions] = useState<CategoryDto[]>([]);
   const [submitting, setSubmitting] = useState(false);
-  const [createdName, setCreatedName] = useState<string | null>(null);
+  const [created, setCreated] = useState<{ id: string; name: string } | null>(null);
   const nameInputRef = useRef<HTMLInputElement>(null);
 
   // Kategorijų sąrašas — tik pasiūlymams (datalist). Įvesti galima bet ką.
@@ -87,7 +88,7 @@ export function ProductForm() {
 
     setSubmitting(true);
     setErrors({});
-    setCreatedName(null);
+    setCreated(null);
 
     try {
       const response = await fetch('/api/products', {
@@ -111,7 +112,7 @@ export function ProductForm() {
       }
 
       const product = (await response.json()) as ProductDto;
-      setCreatedName(product.name);
+      setCreated({ id: product.id, name: product.name });
       setValues(EMPTY_VALUES);
       setSuggestions((current) =>
         current.some((category) => category.slug === product.category.slug)
@@ -129,16 +130,19 @@ export function ProductForm() {
   function resetForm() {
     setValues(EMPTY_VALUES);
     setErrors({});
-    setCreatedName(null);
+    setCreated(null);
     nameInputRef.current?.focus();
   }
 
   return (
     <form className={styles.card} onSubmit={handleSubmit} noValidate>
-      {createdName && (
+      {created && (
         <div className={styles.alertSuccess} role="status">
-          <strong>Produktas „{createdName}“ sukurtas.</strong>
+          <strong>Produktas „{created.name}“ sukurtas.</strong>
           <span>Forma paruošta įvesti kitą produktą.</span>
+          <Link href={`/products/${created.id}`} className={styles.alertLink}>
+            Atidaryti produkto puslapį →
+          </Link>
         </div>
       )}
 

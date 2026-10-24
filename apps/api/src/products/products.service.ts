@@ -1,5 +1,10 @@
-import { Injectable } from '@nestjs/common';
-import type { CategoryDto, CreateProductInput, ProductDto } from '@scraptest/contracts';
+import { Injectable, NotFoundException } from '@nestjs/common';
+import type {
+  CategoryDto,
+  CreateProductInput,
+  ProductDto,
+  UpdateProductCountryInput,
+} from '@scraptest/contracts';
 import { CategoriesService } from '../categories/categories.service.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 
@@ -7,10 +12,15 @@ interface ProductRecord {
   id: string;
   name: string;
   description: string | null;
+  country: string | null;
   createdAt: Date;
   updatedAt: Date;
   category: CategoryDto;
 }
+
+const productWithCategory = {
+  include: { category: { select: { id: true, name: true, slug: true } } },
+} as const;
 
 @Injectable()
 export class ProductsService {
@@ -22,10 +32,23 @@ export class ProductsService {
   async findAll(): Promise<ProductDto[]> {
     const products = await this.prisma.product.findMany({
       orderBy: { createdAt: 'desc' },
-      include: { category: { select: { id: true, name: true, slug: true } } },
+      ...productWithCategory,
     });
 
     return products.map((product) => this.toDto(product));
+  }
+
+  async findOne(id: string): Promise<ProductDto> {
+    const product = await this.prisma.product.findUnique({
+      where: { id },
+      ...productWithCategory,
+    });
+
+    if (!product) {
+      throw new NotFoundException('Produktas nerastas.');
+    }
+
+    return this.toDto(product);
   }
 
   async create(input: CreateProductInput): Promise<ProductDto> {
@@ -38,7 +61,26 @@ export class ProductsService {
         description: input.description,
         categoryId: category.id,
       },
-      include: { category: { select: { id: true, name: true, slug: true } } },
+      ...productWithCategory,
+    });
+
+    return this.toDto(product);
+  }
+
+  async updateCountry(id: string, input: UpdateProductCountryInput): Promise<ProductDto> {
+    const exists = await this.prisma.product.findUnique({
+      where: { id },
+      select: { id: true },
+    });
+
+    if (!exists) {
+      throw new NotFoundException('Produktas nerastas.');
+    }
+
+    const product = await this.prisma.product.update({
+      where: { id },
+      data: { country: input.country },
+      ...productWithCategory,
     });
 
     return this.toDto(product);
@@ -49,6 +91,7 @@ export class ProductsService {
       id: product.id,
       name: product.name,
       description: product.description,
+      country: product.country,
       category: product.category,
       createdAt: product.createdAt.toISOString(),
       updatedAt: product.updatedAt.toISOString(),

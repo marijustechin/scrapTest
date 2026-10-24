@@ -238,6 +238,20 @@
   font-size: 0.9rem;
 }
 
+.alertLink {
+  align-self: flex-start;
+  margin-top: 4px;
+  color: #86efac;
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.alertLink:hover {
+  color: #d1fae5;
+}
+
 .alertError {
   padding: 13px 15px;
   border: 1px solid rgba(248, 113, 113, 0.35);
