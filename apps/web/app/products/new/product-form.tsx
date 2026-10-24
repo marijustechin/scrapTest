@@ -1,66 +1,59 @@
 'use client';
 
 import {
+  CATEGORY_NAME_MAX_LENGTH,
   PRODUCT_DESCRIPTION_MAX_LENGTH,
   PRODUCT_NAME_MAX_LENGTH,
   createProductSchema,
   type CategoryDto,
+  type ProductDto,
 } from '@scraptest/contracts';
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 import styles from './product-form.module.css';
 
 interface FormValues {
   name: string;
-  categoryId: string;
+  category: string;
   description: string;
 }
 
 type FormField = keyof FormValues;
 type FieldErrors = Partial<Record<FormField | 'form', string>>;
-type CategoriesState = 'loading' | 'ready' | 'error';
 
-const EMPTY_VALUES: FormValues = { name: '', categoryId: '', description: '' };
+const EMPTY_VALUES: FormValues = { name: '', category: '', description: '' };
 
 export function ProductForm() {
   const [values, setValues] = useState<FormValues>(EMPTY_VALUES);
   const [errors, setErrors] = useState<FieldErrors>({});
-  const [categories, setCategories] = useState<CategoryDto[]>([]);
-  const [categoriesState, setCategoriesState] = useState<CategoriesState>('loading');
-  const [categoriesReloadKey, setCategoriesReloadKey] = useState(0);
+  const [suggestions, setSuggestions] = useState<CategoryDto[]>([]);
   const [submitting, setSubmitting] = useState(false);
   const [createdName, setCreatedName] = useState<string | null>(null);
   const nameInputRef = useRef<HTMLInputElement>(null);
 
+  // Kategorijų sąrašas — tik pasiūlymams (datalist). Įvesti galima bet ką.
   useEffect(() => {
     let cancelled = false;
 
-    async function loadCategories() {
+    async function loadSuggestions() {
       try {
         const response = await fetch('/api/categories', { cache: 'no-store' });
-
-        if (!response.ok) {
-          throw new Error(`HTTP ${response.status}`);
-        }
+        if (!response.ok) return;
 
         const data = (await response.json()) as CategoryDto[];
-        if (cancelled) return;
-
-        setCategories(data);
-        setCategoriesState('ready');
+        if (!cancelled) {
+          setSuggestions(data);
+        }
       } catch {
-        if (cancelled) return;
-
-        setCategories([]);
-        setCategoriesState('error');
+        // Pasiūlymų įkelti nepavyko — forma vis tiek veikia su laisvu tekstu.
       }
     }
 
-    void loadCategories();
+    void loadSuggestions();
 
     return () => {
       cancelled = true;
     };
-  }, [categoriesReloadKey]);
+  }, []);
 
   function updateField<Field extends FormField>(field: Field, value: FormValues[Field]) {
     setValues((current) => ({ ...current, [field]: value }));
@@ -73,7 +66,7 @@ export function ProductForm() {
     // Ta pati schema, kaip backend'e — klaidos parodomos iškart, be serverio kelionės.
     const parsed = createProductSchema.safeParse({
       name: values.name,
-      categoryId: values.categoryId,
+      category: values.category,
       description: values.description,
     });
 
@@ -83,7 +76,7 @@ export function ProductForm() {
       for (const issue of parsed.error.issues) {
         const field = issue.path[0];
 
-        if (field === 'name' || field === 'categoryId' || field === 'description') {
+        if (field === 'name' || field === 'category' || field === 'description') {
           nextErrors[field] ??= issue.message;
         }
       }
@@ -117,9 +110,14 @@ export function ProductForm() {
         return;
       }
 
-      const product = (await response.json()) as { name: string };
+      const product = (await response.json()) as ProductDto;
       setCreatedName(product.name);
       setValues(EMPTY_VALUES);
+      setSuggestions((current) =>
+        current.some((category) => category.slug === product.category.slug)
+          ? current
+          : [...current, product.category].sort((a, b) => a.name.localeCompare(b.name, 'lt')),
+      );
       nameInputRef.current?.focus();
     } catch {
       setErrors({ form: 'Nepavyko susisiekti su API. Ar backendas paleistas?' });
@@ -135,9 +133,6 @@ export function ProductForm() {
     nameInputRef.current?.focus();
   }
 
-  const categoriesUnavailable = categoriesState === 'error';
-  const submitDisabled = submitting || categoriesUnavailable || categories.length === 0;
-
   return (
     <form className={styles.card} onSubmit={handleSubmit} noValidate>
       {createdName && (
@@ -150,22 +145,6 @@ export function ProductForm() {
       {errors.form && (
         <div className={styles.alertError} role="alert">
           {errors.form}
-        </div>
-      )}
-
-      {categoriesUnavailable && (
-        <div className={styles.alertError} role="alert">
-          Nepavyko įkelti kategorijų.{' '}
-          <button
-            type="button"
-            className={styles.linkButton}
-            onClick={() => {
-              setCategoriesState('loading');
-              setCategoriesReloadKey((key) => key + 1);
-            }}
-          >
-            Bandyti dar kartą
-          </button>
         </div>
       )}
 
@@ -199,28 +178,32 @@ export function ProductForm() {
           <label className={styles.label} htmlFor="product-category">
             Kategorija <span className={styles.required}>*</span>
           </label>
-          <select
+          <input
             id="product-category"
-            className={`${styles.control} ${errors.categoryId ? styles.controlInvalid : ''}`}
-            value={values.categoryId}
-            onChange={(event) => updateField('categoryId', event.target.value)}
-            disabled={categoriesState !== 'ready'}
-            aria-invalid={Boolean(errors.categoryId)}
-            aria-describedby={errors.categoryId ? 'product-category-error' : undefined}
+            className={`${styles.control} ${errors.category ? styles.controlInvalid : ''}`}
+            type="text"
+            value={values.category}
+            onChange={(event) => updateField('category', event.target.value)}
+            maxLength={CATEGORY_NAME_MAX_LENGTH}
+            placeholder="Pvz., Virtuvės technika"
+            autoComplete="off"
+            list="product-category-suggestions"
+            aria-invalid={Boolean(errors.category)}
+            aria-describedby={errors.category ? 'product-category-error' : 'product-category-hint'}
             required
-          >
-            <option value="" disabled>
-              {categoriesState === 'loading' ? 'Kraunamos kategorijos…' : 'Pasirinkite kategoriją'}
-            </option>
-            {categories.map((category) => (
-              <option key={category.id} value={category.id}>
-                {category.name}
-              </option>
+          />
+          <datalist id="product-category-suggestions">
+            {suggestions.map((category) => (
+              <option key={category.id} value={category.name} />
             ))}
-          </select>
-          {errors.categoryId && (
+          </datalist>
+          {errors.category ? (
             <span id="product-category-error" className={styles.fieldError}>
-              {errors.categoryId}
+              {errors.category}
+            </span>
+          ) : (
+            <span id="product-category-hint" className={styles.hint}>
+              Rašykite laisvai — nauja kategorija bus sukurta automatiškai.
             </span>
           )}
         </div>
@@ -262,7 +245,7 @@ export function ProductForm() {
       </div>
 
       <div className={styles.actions}>
-        <button type="submit" className={styles.primary} disabled={submitDisabled}>
+        <button type="submit" className={styles.primary} disabled={submitting}>
           {submitting ? 'Saugoma…' : 'Išsaugoti produktą'}
         </button>
         <button

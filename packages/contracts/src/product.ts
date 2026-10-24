@@ -3,6 +3,7 @@ import { z } from 'zod';
 export const PRODUCT_NAME_MIN_LENGTH = 2;
 export const PRODUCT_NAME_MAX_LENGTH = 120;
 export const PRODUCT_DESCRIPTION_MAX_LENGTH = 2000;
+export const CATEGORY_NAME_MAX_LENGTH = 60;
 
 /**
  * Vienas validacijos šaltinis:
@@ -15,7 +16,12 @@ export const createProductSchema = z.object({
     .trim()
     .min(PRODUCT_NAME_MIN_LENGTH, 'Pavadinimas turi būti bent 2 simbolių.')
     .max(PRODUCT_NAME_MAX_LENGTH, 'Pavadinimas per ilgas (iki 120 simbolių).'),
-  categoryId: z.uuid('Pasirinkite kategoriją.'),
+  category: z
+    .string()
+    .trim()
+    .min(1, 'Įveskite kategoriją.')
+    .max(CATEGORY_NAME_MAX_LENGTH, 'Kategorija per ilga (iki 60 simbolių).')
+    .regex(/[\p{L}\p{N}]/u, 'Kategorijoje turi būti bent viena raidė arba skaičius.'),
   description: z
     .string()
     .trim()

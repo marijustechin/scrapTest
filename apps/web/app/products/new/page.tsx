@@ -20,7 +20,8 @@ export default function NewProductPage() {
           <span className={styles.eyebrow}>Produktai</span>
           <h1 className={styles.title}>Naujas produktas</h1>
           <p className={styles.subtitle}>
-            Užpildykite pavadinimą, pasirinkite kategoriją ir, jei reikia, pridėkite aprašymą.
+            Užpildykite pavadinimą, įrašykite kategoriją (arba pasirinkite iš siūlomų) ir, jei
+            reikia, pridėkite aprašymą.
           </p>
         </header>
 

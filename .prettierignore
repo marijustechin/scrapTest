@@ -7,5 +7,8 @@ coverage
 package-lock.json
 pnpm-lock.yaml
 apps/api/src/generated
+apps/api/.agents
+apps/api/.claude
+apps/api/.windsurf
 apps/web/next-env.d.ts
 *.tsbuildinfo

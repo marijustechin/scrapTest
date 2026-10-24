@@ -24,6 +24,12 @@ coverage/
 # --- Prisma generated client (re-created by `pnpm db:generate`) -------------
 apps/api/src/generated/
 
+# --- Prisma CLI pulled agent skills (third-party, auto-installed) -----------
+apps/api/.agents/
+apps/api/.claude/
+apps/api/.windsurf/
+apps/api/skills-lock.json
+
 # --- Next.js ----------------------------------------------------------------
 apps/web/next-env.d.ts
 .vercel
